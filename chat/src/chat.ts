@@ -1,5 +1,4 @@
 import { IRoom, WS } from "./types";
-import { getLogger } from "./logger";
 
 export function string(item: string | Buffer | ArrayBuffer) {
     if (typeof item === "string") {

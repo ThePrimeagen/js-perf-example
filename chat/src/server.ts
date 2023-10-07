@@ -1,6 +1,6 @@
 import express from "express";
-import { Chat, string } from "./set-chat";
-import { createRoom } from "./room/set-room";
+import { Chat, string } from "./chat";
+import { createRoom } from "./room/room";
 import { initConfig } from "./cli";
 import { initLogger } from "./logger";
 

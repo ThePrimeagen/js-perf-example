@@ -4,7 +4,7 @@ use futures_util::{SinkExt, StreamExt};
 use std::{sync::{
     atomic::{AtomicBool, AtomicUsize},
     Arc,
-}, path::PathBuf};
+}, path::PathBuf, io::Write};
 
 use clap::Parser;
 
@@ -69,7 +69,7 @@ async fn run_client(
             let time_between = std::cmp::max(1, config.time_between_messages);
             let time_left = config.messages_to_send * time_between as usize * 3;
             let time_left =
-                (std::cmp::max(1000, time_left)).saturating_sub(now.elapsed().as_millis() as usize);
+                (std::cmp::max(1500, time_left)).saturating_sub(now.elapsed().as_millis() as usize);
 
             tokio::select! {
                 _ = tokio::time::sleep(tokio::time::Duration::from_millis(time_left as u64)) => {
@@ -176,10 +176,15 @@ pub async fn client() -> Result<()> {
             }
         }
 
-        println!("time_taken, count");
+        // open file
+        let mut file = std::fs::File::create(&config.file).unwrap();
+        _ = file.write("time_taken, count\n".as_bytes());
         for (time_taken, count) in results {
-            println!("{}, {}", time_taken, count);
+            _ = file.write(format!("{}, {}\n", time_taken, count).as_bytes());
         }
+        _ = file.flush();
+
+        println!("file: {:?}", config.file.to_str());
         println!("{} clients timed out", timeouts);
         println!("{} clients errored", errors);
     });

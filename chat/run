@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <output_dir>"
+    exit 1
+fi
+
+tsc
+
+# grab input from user after asking is it ok to delete directory
+read -p "This will delete $1. Any key to continue " -n 1 -r
+rm -rf $1
+mkdir data
+for parallel in 100 200 300 400 500; do
+    node dist/server.js &
+    sleep 1
+    cargo run --release -- --count 10000 -m 30 -r 3 -q $parallel -x 30 -f data/$parallel.csv
+    sleep 1
+done
+

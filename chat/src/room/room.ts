@@ -1,7 +1,7 @@
 import { IRoom, WS } from "../types";
 
 let id = 0;
-export default class SetRoom {
+export default class Room {
     private users: Map<WS, number>;
 
     constructor(public name: string) {
@@ -23,13 +23,13 @@ export default class SetRoom {
             return;
         }
 
-        for (const sock of this.users.keys()) {
+        this.users.forEach((_, sock) => {
             sock.send(`${id} says ${message}`);
-        }
+        });
     }
 }
 
 export function createRoom(name: string): IRoom {
-    return new SetRoom(name);
+    return new Room(name);
 }
 

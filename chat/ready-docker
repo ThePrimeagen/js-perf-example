@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+#network=$(docker network ls | grep perfnet)
+#if [ -z "$network" ]; then
+#    echo "creating perfnet"
+#    docker network create perfnet
+#fi
+
+echo "docker build -t perf-server -f server.Dockerfile ."
+docker build -t perf-server -f server.Dockerfile . > /dev/null
+echo "docker build -t perf-client -f client.Dockerfile ."
+docker build -t perf-client -f client.Dockerfile . > /dev/null

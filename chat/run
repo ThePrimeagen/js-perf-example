@@ -10,11 +10,11 @@ tsc
 # grab input from user after asking is it ok to delete directory
 read -p "This will delete $1. Any key to continue " -n 1 -r
 rm -rf $1
-mkdir data
-for parallel in 100 200 300 400 500; do
+mkdir $1
+for parallel in 250 500 750 1000 1250; do
     node dist/server.js &
     sleep 1
-    cargo run --release -- --count 10000 -m 30 -r 3 -q $parallel -x 30 -f data/$parallel.csv
+    cargo run --release -- --count 10000 --time-between-connections 10 --time-between-messages 30 -m 30 -r 3 -q $parallel -x 30 -f $1/$parallel.csv
     sleep 1
 done
 

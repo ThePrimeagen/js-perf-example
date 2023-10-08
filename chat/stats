@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import pandas as pd
+import sys
+import glob
+import os
+import numpy as np
+
+# Set the default directory or use the provided argument
+dir_path = sys.argv[1] if len(sys.argv) > 1 else '/tmp'
+
+# Get a list of all CSV files in the specified directory
+csv_files = glob.glob(os.path.join(dir_path, '*.csv'))
+
+# Define the percentiles to be calculated
+percentiles = [1, 5, 10, 25, 50, 75, 90, 95, 99]
+
+# Loop through all CSV files
+for file in csv_files:
+    # Load the data from the CSV file
+    df = pd.read_csv(file)
+
+    # Convert 'time_taken' to numeric and drop NaN values
+    df['time_taken'] = pd.to_numeric(df['time_taken'], errors='coerce')
+    df = df.dropna(subset=['time_taken'])
+
+    # Calculate and print the specified percentiles for 'time_taken'
+    print(f"Percentiles for file {os.path.basename(file)}:")
+    str = ""
+    for perc in percentiles:
+        value = np.percentile(df['time_taken'], perc)
+        str += f" {perc}%: {value}"
+    print(f"{str}\n")
+
+

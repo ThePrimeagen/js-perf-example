@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <output_dir> <parallel>"
+    exit 1
+fi
+
+tsc
+node dist/server.js &
+sleep 1
+cargo run --release -- --count 10000 --time-between-connections 10 --time-between-messages 30 -m 30 -r 3 -q $2 -x 30 -f $1/$2.csv
+

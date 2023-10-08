@@ -69,7 +69,7 @@ async fn run_client(
             let time_between = std::cmp::max(1, config.time_between_messages);
             let time_left = config.messages_to_send * time_between as usize * 3;
             let time_left =
-                (std::cmp::max(1500, time_left)).saturating_sub(now.elapsed().as_millis() as usize);
+                (std::cmp::max(2500, time_left)).saturating_sub(now.elapsed().as_millis() as usize);
 
             tokio::select! {
                 _ = tokio::time::sleep(tokio::time::Duration::from_millis(time_left as u64)) => {

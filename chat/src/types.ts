@@ -1,6 +1,8 @@
 import { WebSocket } from "uWebSockets.js";
 
-export type WS = WebSocket<any>;
+export interface WS {
+    send(message: string): void;
+}
 
 export interface IRoom {
     name: string;

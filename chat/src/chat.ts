@@ -32,7 +32,7 @@ function isCommand(msg: string): boolean {
     return msg === "MSG" || msg === "JOIN" || msg === "LEAVE";
 }
 
-function getMessage(message: string | Buffer): Command | undefined {
+function getMessage(message: string | Buffer | ArrayBuffer): Command | undefined {
     if (typeof message === "object") {
         message = string(message);
     }
@@ -68,7 +68,7 @@ export class Chat {
         this.rooms = new Map();
     }
 
-    msg(user: WS, msg: string | Buffer) {
+    msg(user: WS, msg: string | Buffer | ArrayBuffer) {
         const message = getMessage(msg);
         if (!message) {
             return;

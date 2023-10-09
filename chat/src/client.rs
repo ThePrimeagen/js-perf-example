@@ -34,9 +34,6 @@ struct Config {
     #[clap(env, short = 'x', long, default_value_t = 20)]
     room_count: usize,
 
-    #[clap(env, short, long, default_value_t = 10)]
-    time_between_messages: u64,
-
     #[clap(env, long, default_value_t = 10)]
     time_between_connections: u64,
 
@@ -55,21 +52,19 @@ async fn run_client(
     let (mut write, mut read) = stream.split();
     let msg_count = Arc::new(AtomicUsize::new(0));
     let timeout = Arc::new(AtomicBool::new(false));
-    let now = std::time::Instant::now();
+    let my_message_count = Arc::new(AtomicUsize::new(0));
 
     let inner_msg_count = msg_count.clone();
     let inner_timeout = timeout.clone();
+    let inner_my_message_count = my_message_count.clone();
     let reader = tokio::spawn(async move {
         let msg_count = inner_msg_count;
         let timeout = inner_timeout;
-        let mut my_message_count = config.messages_to_send;
-        let now = std::time::Instant::now();
+        let to_send = config.messages_to_send;
+        let my_message_count = inner_my_message_count;
 
         loop {
-            let time_between = std::cmp::max(1, config.time_between_messages);
-            let time_left = config.messages_to_send * time_between as usize * 3;
-            let time_left =
-                (std::cmp::max(2500, time_left)).saturating_sub(now.elapsed().as_millis() as usize);
+            let time_left = 2500;
 
             tokio::select! {
                 _ = tokio::time::sleep(tokio::time::Duration::from_millis(time_left as u64)) => {
@@ -83,8 +78,9 @@ async fn run_client(
                     let id = id.split(" ").last().unwrap();
                     let id = id.parse::<usize>().unwrap();
                     if id == idx {
-                        my_message_count = my_message_count.saturating_sub(1);
-                        if my_message_count == 0 {
+                        let next_val =
+                            my_message_count.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
+                        if next_val == to_send {
                             break;
                         }
                     }
@@ -95,9 +91,6 @@ async fn run_client(
 
     let mut my_rooms = vec![];
     for i in 0..config.rooms_to_join {
-        let duration = tokio::time::Duration::from_millis(config.time_between_messages);
-        tokio::time::sleep(duration).await;
-
         let idx = (idx + i) % rooms.len();
         let room = &rooms[idx];
         my_rooms.push(room);
@@ -108,24 +101,32 @@ async fn run_client(
             .await?;
     }
 
+
+    let mut total_time = 0;
+
     for i in 0..config.messages_to_send {
-        let duration = tokio::time::Duration::from_millis(config.time_between_messages);
-        tokio::time::sleep(duration).await;
 
         let room = my_rooms[(idx + i) % my_rooms.len()];
         let msg = format!("MSG {} {}: hello {}", room, idx, room);
+
+        let sent_time = std::time::Instant::now();
         write
             .send(tokio_tungstenite::tungstenite::Message::Text(msg))
             .await?;
+
+        while my_message_count.load(std::sync::atomic::Ordering::Relaxed) < i + 1 {
+            tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
+        }
+
+        let duration = sent_time.elapsed().as_millis() as u64;
+        total_time += duration;
     }
 
     reader.await?;
     write.close().await?;
 
-    let time_taken = now.elapsed().as_millis();
-
     return Ok((
-        time_taken as usize,
+        total_time as usize,
         msg_count.load(std::sync::atomic::Ordering::Relaxed),
         timeout.load(std::sync::atomic::Ordering::Relaxed),
     ));

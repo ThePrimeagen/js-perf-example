@@ -14,7 +14,7 @@ mkdir $1
 for parallel in 250 500 750 1000 1250; do
     node dist/server.js &
     sleep 1
-    cargo run --release -- --count 10000 --time-between-connections 10 --time-between-messages 30 -m 30 -r 3 -q $parallel -x 30 -f $1/$parallel.csv
+    cargo run --release -- --count 10000 --time-between-connections 10 -m 30 -r 3 -q $parallel -x 30 -f $1/$parallel.csv
     sleep 1
 done
 

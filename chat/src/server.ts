@@ -1,33 +1,28 @@
 import express from "express";
-import { Chat, string } from "./chat";
+import { Chat } from "./chat";
 import { createRoom } from "./room/room";
 import { initConfig } from "./cli";
 import { initLogger } from "./logger";
 
-import ws from "uWebSockets.js";
-import { WS } from "./types";
+import uWS from "uWebSockets.js";
 
 const config = initConfig();
 initLogger(config);
 console.log("port", config.port);
 const chat = new Chat(createRoom);
 
-const wss = ws.App();
-wss.ws("/*", {
-    message: (ws: WS, message: any) => {
-        chat.msg(ws, message);
-    },
-
-    close: (ws) => {
+uWS.App().ws("/*", {
+    close(ws) {
         chat.close(ws);
     },
-});
-
-wss.listen(config.port, (token) => {
-    if (token) {
+    message(ws, message) {
+        chat.msg(ws, message);
+    }
+}).listen(config.port, (listenSocket) => {
+    if (listenSocket) {
         console.log("Listening to port " + config.port);
     } else {
-        console.log("Failed to listen to port " + config.port);
+        console.log("failure to launch at " + config.port);
     }
 });
 

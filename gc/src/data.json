@@ -5,7 +5,7 @@
     "random": 0.0,
     "pool": false,
     "ring": {
-        "style": "push",
+        "style": "ring",
         "low": 4,
         "high": 17
     }

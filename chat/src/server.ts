@@ -3,30 +3,27 @@ import { Chat } from "./chat";
 import { createRoom } from "./room/room";
 import { initConfig } from "./cli";
 import { initLogger } from "./logger";
-
-import uWS from "uWebSockets.js";
+import WebSocket from "ws";
 
 const config = initConfig();
 initLogger(config);
 console.log("port", config.port);
 const chat = new Chat(createRoom);
 
-const wss = uWS.App().ws("/*", {
-    close(ws) {
+const server = new WebSocket.Server({ port: config.port });
+server.on("connection", (ws) => {
+    ws.on("message", (message) => {
+        chat.msg(ws, message);
+    });
+    ws.on("close", () => {
         chat.close(ws);
-    },
-    message(ws, message) {
-        chat.msg(wss, ws, message);
-    }
+    });
 });
 
-wss.listen(config.port, (listenSocket) => {
-    if (listenSocket) {
-        console.log("Listening to port " + config.port);
-    } else {
-        console.log("failure to launch at " + config.port);
-    }
+server.on("listening", () => {
+    console.log("listening on", config.port);
 });
+
 
 const app = express();
 app.get("/healthcheck", (_, res) => {

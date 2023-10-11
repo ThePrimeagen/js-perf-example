@@ -1,7 +1,9 @@
-import type { IRoom, Publish, WS } from "./types";
+import type { IRoom, WS } from "./types";
 
-export function string(item: string | Buffer | ArrayBuffer) {
-    if (typeof item === "string") {
+export function string(item: string | Buffer | ArrayBuffer | Buffer[]) {
+    if (Array.isArray(item)) {
+        return Buffer.concat(item).toString();
+    } else if (typeof item === "string") {
         return item;
     } else if (item instanceof Buffer) {
         return item.toString();
@@ -32,7 +34,7 @@ function isCommand(msg: string): boolean {
     return msg === "MSG" || msg === "JOIN" || msg === "LEAVE";
 }
 
-function getMessage(message: string | Buffer | ArrayBuffer): Command | undefined {
+function getMessage(message: string | Buffer | ArrayBuffer | Buffer[]): Command | undefined {
     if (typeof message === "object") {
         message = string(message);
     }
@@ -68,20 +70,18 @@ export class Chat {
         this.rooms = new Map();
     }
 
-    msg(pub: Publish, user: WS, msg: string | Buffer | ArrayBuffer) {
+    msg(user: WS, msg: string | Buffer | ArrayBuffer | Buffer[]) {
         const message = getMessage(msg);
         if (!message) {
             return;
         }
 
         if (message.command === "JOIN") {
-            //this.getRoom(message.room).add(user);
-            user.subscribe(message.room);
+            this.getRoom(message.room).add(user);
         } else if (message.command === "MSG") {
-            //this.getRoom(message.room).push(user, message.message);
-            pub.publish(message.room, message.message);
+            this.getRoom(message.room).push(user, message.message);
         } else {
-            user.unsubscribe(message.room);
+            this.getRoom(message.room).remove(user);
         }
     }
 

@@ -1,4 +1,4 @@
-import { IRoom, WS } from "./types";
+import type { IRoom, Publish, WS } from "./types";
 
 export function string(item: string | Buffer | ArrayBuffer) {
     if (typeof item === "string") {
@@ -68,25 +68,29 @@ export class Chat {
         this.rooms = new Map();
     }
 
-    msg(user: WS, msg: string | Buffer | ArrayBuffer) {
+    msg(pub: Publish, user: WS, msg: string | Buffer | ArrayBuffer) {
         const message = getMessage(msg);
         if (!message) {
             return;
         }
 
         if (message.command === "JOIN") {
-            this.getRoom(message.room).add(user);
+            //this.getRoom(message.room).add(user);
+            user.subscribe(message.room);
         } else if (message.command === "MSG") {
-            this.getRoom(message.room).push(user, message.message);
+            //this.getRoom(message.room).push(user, message.message);
+            pub.publish(message.room, message.message);
         } else {
-            this.getRoom(message.room).remove(user);
+            user.unsubscribe(message.room);
         }
     }
 
-    close(user: WS) {
+    close(_: WS) {
+        /*
         this.rooms.forEach((room) => {
             room.remove(user);
         });
+        */
     }
 
     private getRoom(roomName: string): IRoom {

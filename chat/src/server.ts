@@ -11,14 +11,16 @@ initLogger(config);
 console.log("port", config.port);
 const chat = new Chat(createRoom);
 
-uWS.App().ws("/*", {
+const wss = uWS.App().ws("/*", {
     close(ws) {
         chat.close(ws);
     },
     message(ws, message) {
-        chat.msg(ws, message);
+        chat.msg(wss, ws, message);
     }
-}).listen(config.port, (listenSocket) => {
+});
+
+wss.listen(config.port, (listenSocket) => {
     if (listenSocket) {
         console.log("Listening to port " + config.port);
     } else {

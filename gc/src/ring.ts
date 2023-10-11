@@ -80,10 +80,11 @@ function rand(): number {
 
 const objs: Record<string, string>[] = [];
 const startTime = Date.now();
+const timeToTake = process.argv[2] ? +process.argv[2] : 5000;
 
 let objectsAdded = 0;
 let objectsRemoved = 0;
-while (Date.now() - startTime < 6000) {
+while (Date.now() - startTime < timeToTake) {
     const release = rand();
     objectsRemoved += Math.min(release, objs.length);
 

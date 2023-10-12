@@ -21,7 +21,7 @@ export function initLogger(args: Config): Logger {
     }
 
     logger = pino({
-        level: args.logLevel || process.env.PINO_LEVEL || "debug",
+        level: args.logLevel || process.env.PINO_LEVEL || "warn",
     }, fileTransport);
 
     return logger;

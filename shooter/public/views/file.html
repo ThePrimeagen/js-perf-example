@@ -1,0 +1,75 @@
+{{ block "file-select" . }}
+<form action="/" method="get">
+    <input text="text" name="file" value="{{ if . }}{{ .File }}{{end}}" />
+    <button type="submit">Display</button>
+</form>
+{{ end }}
+
+{{ block "file-display" . }}
+    {{ if . }}
+        {{ if .Counters }}
+            <ul>
+                {{ range $key, $value := .Counters }}
+                   <li><strong>{{ $key }}</strong>: {{ $value }}</li>
+                {{ end }}
+            </ul>
+        {{ end }}
+        {{ if .Charts }}
+            {{ range .Charts }}
+                {{ template "stats" .Stats }}
+                {{ template "chart" . }}
+            {{ end }}
+        {{ end }}
+
+        {{ if .ErrorMsg }}
+            <div class="error">{{ .ErrorMsg }}</div>
+        {{ end }}
+    {{ else }}
+        <p>Select a file to start</p>
+    {{ end }}
+{{ end }}
+
+{{ block "chart" . }}
+<div>
+    <canvas id="chart-{{ .Id }}"></canvas>
+</div>
+<script>
+{
+const ctx = document.getElementById('chart-{{ .Id }}');
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ .Labels }},
+        datasets: [{
+            label: {{ .Title }},
+            data: {{ .Data }},
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+}
+</script>
+{{ end }}
+
+{{ block "stats" . }}
+{{ if . }}
+<div>
+    <p>Stats:</p>
+    <p>5: {{.Q5}}</p>
+    <p>10: {{.Q10}}</p>
+    <p>25: {{.Q25}}</p>
+    <p>50: {{.Median}}</p>
+    <p>75: {{.Q75}}</p>
+    <p>90: {{.Q90}}</p>
+    <p>95: {{.Q95}}</p>
+    <p>Mean: {{.Mean}}</p>
+</div>
+{{ end }}
+{{ end }}

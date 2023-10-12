@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+git checkout perf-1
+git pull origin master --rebase
+git checkout perf-2
+git pull origin master --rebase
+git checkout perf-3
+git pull origin master --rebase
+
+git push origin perf-1 --force
+git push origin perf-2 --force
+git push origin perf-3 --force
+

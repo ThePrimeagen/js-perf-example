@@ -1,5 +1,5 @@
-import { Config } from "./cli";
-import { getLogger } from "./logger";
+import { Config } from "../cli";
+import { getLogger } from "../logger";
 
 export class Writer {
     private data: Map<string, Map<number, number>>;
@@ -73,6 +73,4 @@ export function getWriter(args?: Config): Writer {
 
     return writer;
 }
-
-
 

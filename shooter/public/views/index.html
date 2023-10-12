@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="css/style.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://unpkg.com/htmx.org/dist/htmx.js"></script>
+        <script src="/assets/main.js"></script>
+    </head>
+    <body>
+        <div hx-boost="true">
+            {{ template "file-select" . }}
+            {{ template "file-display" . }}
+        </div>
+    </body>
+</html>

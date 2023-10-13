@@ -1,5 +1,6 @@
 import pino, { Logger } from "pino";
 import { Config } from "./cli";
+import fs from "fs";
 
 let logger: undefined | Logger = undefined;
 export function getLogger(): Logger {
@@ -14,6 +15,12 @@ export function initLogger(args: Config): Logger {
     let fileTransport: undefined | ReturnType<typeof pino.transport> = undefined;
 
     if (args.logPath) {
+        try {
+            if (fs.existsSync(args.logPath)) {
+                fs.unlinkSync(args.logPath);
+            }
+        } catch (e) { }
+
         fileTransport = pino.transport({
             target: 'pino/file',
             options: { destination: args.logPath },

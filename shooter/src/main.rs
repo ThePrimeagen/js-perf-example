@@ -41,10 +41,10 @@ struct Config {
     #[clap(short, long, default_value_t = 10000)]
     games: usize,
 
-    #[clap(short, long, default_value_t = 110)]
+    #[clap(short, long, default_value_t = 120)]
     fast: u64,
 
-    #[clap(short, long, default_value_t = 200)]
+    #[clap(short, long, default_value_t = 140)]
     slow: u64,
 
     #[clap(short, long, default_value_t = 2)]

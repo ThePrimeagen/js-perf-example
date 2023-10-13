@@ -22,7 +22,7 @@ export type PlayerState = {
 let id = 0;
 function createState(x: number, direction: 1 | -1) {
     return {
-        lastFire: 0,
+        lastFire: -1,
         bulletCount: 0,
         won: false,
         x,
@@ -36,6 +36,12 @@ function collide(b1: Bullet, b2: Bullet): boolean {
     return Math.abs(b1.x - b2.x) < consts.BULLET_RADIUS * 2;
 }
 
+function updateBullet(b: Bullet, delta: number) {
+    const xPerMS = consts.BULLET_SPEED / 1000;
+    const diff = xPerMS * b.direction * delta;
+    b.x += diff;
+}
+
 export class Game {
     ended: boolean = false;
 
@@ -45,19 +51,39 @@ export class Game {
     private logger: Logger;
     public loopCount: number = 0;
 
-    constructor(private fireRateMS: number) {
-        this.s1 = createState(-1000, 1);
-        this.s2 = createState(1000, -1);
+    private currentTime: number = 0;
+
+    constructor(private fireRateMS: number, distance: number = 1000) {
+        this.s1 = createState(-distance, 1);
+        this.s2 = createState(distance, -1);
         this.logger = getLogger().child({ p1: this.s1, p2: this.s2, id: id++ });
+    }
+
+    log() {
+        console.log(`Game
+---------------
+s1: ${JSON.stringify(this.s1)}
+s2: ${JSON.stringify(this.s2)}`);
     }
 
     update(delta: number) {
         this.loopCount++;
+        this.currentTime += delta;
+
+        for (const b of this.s2.bullets) {
+            if (b.x < this.s1.x + consts.PLAYER_RADIUS) {
+                this.logger.info({ s1: this.s1, s2: this.s2, loopCount: this.loopCount }, "player one lost");
+                this.s2.won = true;
+                this.s1.won = false;
+                this.ended = true;
+                return;
+            }
+            updateBullet(b, delta);
+        }
 
         // test for bullet collisions
         const bulletsRemoved = [];
         for (const b of this.s1.bullets) {
-
             if (b.x > this.s2.x - consts.PLAYER_RADIUS) {
                 this.logger.info({ s1: this.s1, s2: this.s2, loopCount: this.loopCount }, "player two lost");
                 this.s2.won = false;
@@ -65,31 +91,18 @@ export class Game {
                 this.ended = true;
                 return;
             }
-
-            let collided = false;
             for (const b2 of this.s2.bullets) {
-                if (b.x < this.s1.x + consts.PLAYER_RADIUS) {
-                    this.logger.info({ s1: this.s1, s2: this.s2, loopCount: this.loopCount }, "player one lost");
-                    this.s2.won = true;
-                    this.s1.won = false;
-                    this.ended = true;
-                    return;
-                }
-                collided = collide(b, b2);
-                if (collided) {
+                if (collide(b, b2)) {
                     this.logger.info({
                         b,
                         other: b2,
                     }, "bullets collided");
                     bulletsRemoved.push(b);
+                    bulletsRemoved.push(b2);
                     break;
                 }
             }
-
-            if (!collided) {
-                const xPerMS = consts.BULLET_SPEED / 1000;
-                b.x += xPerMS * b.direction * delta;
-            }
+            updateBullet(b, delta);
         }
 
         bulletsRemoved.forEach(b => {
@@ -100,8 +113,8 @@ export class Game {
 
     fire(player: number) {
         const state = this.getState(player);
-        const now = Date.now();
-        if (state.lastFire + this.fireRateMS > now) {
+        const now = this.currentTime;
+        if (state.lastFire + this.fireRateMS > now && state.lastFire !== -1) {
             this.logger.info("early fire, nothing happened", state);
             return;
         }
@@ -115,7 +128,6 @@ export class Game {
     }
 
     private createBullet(state: PlayerState) {
-        state.bulletCount++;
         state.bullets.add({
             x: state.x + (consts.PLAYER_RADIUS + consts.BULLET_RADIUS) * state.direction,
             direction: state.direction,

@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 base/path/to/data games_to_play"
+    exit 1
+fi
+
+
+read -p "Are you sure you want to delete the directory? (enter to continue): " response
+
+rm -rf $1
+mkdir -p $1
+rm -rf dist
+tsc
+
+for count in 200 400 600; do
+    echo "Running $count"
+    node dist/server.js --logPath $1/$count &
+    sleep 1
+    node_pid=$!
+    cargo run --release -- -q $count -g $2 -f 120 -s 180 -t 5
+    sleep 1
+    kill $node_pid
+    sleep 1
+done

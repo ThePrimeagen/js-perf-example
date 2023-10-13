@@ -4,12 +4,11 @@ import { getLogger } from "../logger";
 export class Writer {
     private data: Map<string, Map<number, number>>;
     private counters: Map<string, number>;
-    private lastTime: number;
+    private id: ReturnType<typeof setTimeout> | undefined;
 
     constructor(private reportIntervalMS: number = 1000) {
         this.data = new Map();
         this.counters = new Map();
-        this.lastTime = 0;
     }
 
     count(title: string) {
@@ -35,14 +34,16 @@ export class Writer {
     }
 
     private async flush() {
-
-        if (this.lastTime === 0) {
-            this.lastTime = Date.now();
-        }
-
-        if (this.lastTime + this.reportIntervalMS > Date.now()) {
+        if (this.id) {
             return;
         }
+
+        this.id = setTimeout(() => {
+            this.flushContents();
+        }, this.reportIntervalMS);
+    }
+
+    private async flushContents() {
 
         for (const [title, pointSet] of this.data.entries()) {
             getLogger().warn({ title, pointSet: Object.fromEntries(pointSet) });
@@ -55,7 +56,7 @@ export class Writer {
         }
 
         this.counters.clear();
-        this.lastTime = Date.now();
+        this.id = undefined;
     }
 
 }

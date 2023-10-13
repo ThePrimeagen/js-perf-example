@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-rm -rf dist
-rm /tmp/master
-rm /tmp/perf-1
-

@@ -23,3 +23,7 @@ server.on("connection", (socket) => {
 });
 
 
+server.on("listening", () => {
+    console.log("listening on", args.port);
+});
+

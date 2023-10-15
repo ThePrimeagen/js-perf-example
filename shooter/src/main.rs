@@ -113,7 +113,7 @@ async fn run_client(stream: Stream, fire_wait: u64, config: &'static Config, pla
                 };
 
                 if config.debug {
-                    println!("DEBUG({}): {:?}", player, msg);
+                    println!("DEBUG({}): {:?}", player, serde_json::to_string(&msg).unwrap());
                 }
 
                 match msg {

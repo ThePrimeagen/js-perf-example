@@ -93,6 +93,6 @@ test("game play", () => {
     expect(ticks).toEqual(892);
     expect(game.gameStats()[0].won).toBe(true);
     expect(game.gameStats()[1].won).toBe(false);
-    expect(game.gameStats()[0].bulletCount).toBe(shot1);
-    expect(game.gameStats()[1].bulletCount).toBe(shot2);
+    expect(game.gameStats()[0].bulletsFired).toBe(shot1);
+    expect(game.gameStats()[1].bulletsFired).toBe(shot2);
 });

@@ -91,6 +91,7 @@ function onMessage(state: State) {
         try {
             state.messages.push(JSON.parse(msg.toString()) as Message);
         } catch (e) {
+            console.error("ERROR", e);
             state.error = true;
         }
     }
@@ -114,8 +115,14 @@ async function playGame(p1: WebSocket, p2: WebSocket) {
     p2.on("message", onMessage(s2));
     p1.on("close", () => s1.close = true);
     p2.on("close", () => s2.close = true);
-    p1.on("error", () => s1.error = true);
-    p2.on("error", () => s2.error = true);
+    p1.on("error", (e) => {
+        console.error("p1 ERROR", e);
+        s1.error = true
+    });
+    p2.on("error", (e) => {
+        console.error("p2 ERROR", e);
+        s2.error = true
+    });
 
     const gameTicker = ticker(FPS, getWriter());
     const game = new Game(100);

@@ -17,7 +17,10 @@ enum Message {
     #[serde(rename = "stop")]
     Stop {
         ticks: u32,
+
+        #[serde(rename = "bulletsFired")]
         bullets_fired: u32,
+
         won: bool,
         error_msg: Option<String>,
     },
@@ -52,11 +55,14 @@ struct Config {
 
     #[clap(short = 'q', long, default_value_t = 100)]
     parallel: usize,
+
+    #[clap(short, long, default_value_t = false)]
+    debug: bool,
 }
 
 type Stream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
-async fn run_client(stream: Stream, fire_wait: u64) -> Result<Option<Message>> {
+async fn run_client(stream: Stream, fire_wait: u64, config: &'static Config, player: usize) -> Result<Option<Message>> {
     let (mut write, mut read) = stream.split();
 
     let msg = read.next().await;
@@ -105,6 +111,10 @@ async fn run_client(stream: Stream, fire_wait: u64) -> Result<Option<Message>> {
                     Some(msg) => msg,
                     None => break,
                 };
+
+                if config.debug {
+                    println!("DEBUG({}): {:?}", player, msg);
+                }
 
                 match msg {
                     Message::Stop { .. } => {
@@ -162,7 +172,7 @@ impl GameResult {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let config = Config::parse();
+    let config: &'static Config = Box::leak(Box::new(Config::parse()));
     let url = format!("ws://{}:{}", config.host, config.port);
     let url: &'static Url = Box::leak(Box::new(Url::parse(&url)?));
     let semaphore = Arc::new(tokio::sync::Semaphore::new(config.parallel));
@@ -207,7 +217,7 @@ async fn main() -> Result<()> {
         let handle = tokio::spawn(async move {
             // client 1 should always win
             let (s1, s2) =
-                futures_util::join!(run_client(s1, faster_player), run_client(s2, slower_player));
+                futures_util::join!(run_client(s1, faster_player, config, 1), run_client(s2, slower_player, config, 2));
 
             if let Ok(Some(Message::Timeout)) = s1 {
                 println!("player1 timed out");

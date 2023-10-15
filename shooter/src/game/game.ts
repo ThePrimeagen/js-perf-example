@@ -12,9 +12,10 @@ type Bullet = {
 export type PlayerState = {
     id: number;
     lastFire: number;
-    bulletCount: number;
+    bulletsFired: number;
     won: boolean;
     x: number;
+    ticks: number;
     direction: 1 | -1;
     bullets: Set<Bullet>;
 }
@@ -23,11 +24,12 @@ let id = 0;
 function createState(x: number, direction: 1 | -1) {
     return {
         lastFire: -1,
-        bulletCount: 0,
+        bulletsFired: 0,
         won: false,
         x,
         direction,
         id: ++id,
+        ticks: 0,
         bullets: new Set<Bullet>(),
     };
 }
@@ -67,6 +69,9 @@ s2: ${JSON.stringify(this.s2)}`);
     }
 
     update(delta: number) {
+        this.s1.ticks += delta;
+        this.s2.ticks += delta;
+
         this.loopCount++;
         this.currentTime += delta;
 
@@ -133,7 +138,7 @@ s2: ${JSON.stringify(this.s2)}`);
             direction: state.direction,
             id: ++id,
         });
-        state.bulletCount++;
+        state.bulletsFired++;
 
         this.logger.info("bullet created", state);
     }

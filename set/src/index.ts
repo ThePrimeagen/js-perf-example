@@ -6,7 +6,9 @@ let {
     charsUntil,
 } = data;
 
+// @ts-ignore
 if (process.argv[2]) {
+// @ts-ignore
     count = +process.argv[2];
 }
 
@@ -45,6 +47,7 @@ function findWithSet(iter: () => string) {
             sizeOnReset += set.size;
             resets++;
             set = new Set();
+            set.add(char);
         }
     }
 

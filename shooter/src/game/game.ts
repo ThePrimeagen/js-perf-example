@@ -76,6 +76,7 @@ s2: ${JSON.stringify(this.s2)}`);
         this.currentTime += delta;
 
         for (const b of this.s2.bullets) {
+            updateBullet(b, delta);
             if (b.x < this.s1.x + consts.PLAYER_RADIUS) {
                 this.logger.info({ s1: this.s1, s2: this.s2, loopCount: this.loopCount }, "player one lost");
                 this.s2.won = true;
@@ -83,12 +84,12 @@ s2: ${JSON.stringify(this.s2)}`);
                 this.ended = true;
                 return;
             }
-            updateBullet(b, delta);
         }
 
         // test for bullet collisions
         const bulletsRemoved = [];
         for (const b of this.s1.bullets) {
+            updateBullet(b, delta);
             if (b.x > this.s2.x - consts.PLAYER_RADIUS) {
                 this.logger.info({ s1: this.s1, s2: this.s2, loopCount: this.loopCount }, "player two lost");
                 this.s2.won = false;
@@ -107,7 +108,6 @@ s2: ${JSON.stringify(this.s2)}`);
                     break;
                 }
             }
-            updateBullet(b, delta);
         }
 
         bulletsRemoved.forEach(b => {

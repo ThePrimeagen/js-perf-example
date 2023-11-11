@@ -9,6 +9,13 @@ initLogger({
     logLevel: process.env.TEST_LOG ? "debug" : "warn",
 } as any as Config);
 
+function speeds(): [number, number] {
+    return [
+        Math.ceil(consts.PLAYER_RADIUS * 1000 / consts.BULLET_SPEED),
+        Math.ceil(consts.BULLET_RADIUS * 1000 / consts.BULLET_SPEED),
+    ];
+}
+
 test("player one shoots and wins", () => {
     const distance = 1000;
     const game = new Game(100, distance);
@@ -17,11 +24,12 @@ test("player one shoots and wins", () => {
     game.fire(1);
 
     const timeTaken = Math.floor((distance * 2) / consts.BULLET_SPEED) * 1000;
-    game.update(timeTaken - 1);
+    const [playerRadius, bulletRadius] = speeds();
+    game.update(timeTaken - 2 * playerRadius - bulletRadius - 1);
 
     expect(game.ended).toBe(false);
 
-    game.update(2);
+    game.update(3);
 
     expect(game.ended).toBe(true);
 });
@@ -34,7 +42,8 @@ test("player two shoots and wins", () => {
     game.fire(2);
 
     const timeTaken = Math.floor((distance * 2) / consts.BULLET_SPEED) * 1000;
-    game.update(timeTaken - 1);
+    const [playerRadius, bulletRadius] = speeds();
+    game.update(timeTaken - 2 * playerRadius - bulletRadius - 1);
 
     expect(game.ended).toBe(false);
 
@@ -90,7 +99,7 @@ test("game play", () => {
 
     } while (!game.ended);
 
-    expect(ticks).toEqual(892);
+    expect(ticks).toEqual(891);
     expect(game.gameStats()[0].won).toBe(true);
     expect(game.gameStats()[1].won).toBe(false);
     expect(game.gameStats()[0].bulletsFired).toBe(shot1);

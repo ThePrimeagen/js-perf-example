@@ -175,6 +175,7 @@ type Page struct {
     File string
     TotalTicks int
     Counters map[string]int
+    Ratio float64
 }
 
 func Index(c echo.Context) error {
@@ -205,6 +206,8 @@ func Index(c echo.Context) error {
         "tickIntervalOverrun": 1,
         "tickIntervalUnderrun": 2,
     }
+    tickOnTime := 0;
+    overUnderFlows := 0;
     counters := map[string]int{ }
     id := 1
 
@@ -226,14 +229,19 @@ func Index(c echo.Context) error {
 
         _, ok = parsed["pointSet"]
         if !ok {
+            count := int(parsed["count"].(float64))
             if _, ok := titleIdx[title]; ok {
+                if title == "tickOnTime" {
+                    tickOnTime += count
+                } else {
+                    overUnderFlows += count
+                }
                 chartTickClassify.addPoint(title, int(parsed["count"].(float64)), titleIdx[title])
             } else {
                 if _, ok := counters[title]; !ok {
-                    counters[title] = int(parsed["count"].(float64))
-                } else {
-                    counters[title] += int(parsed["count"].(float64))
+                    counters[title] = 0
                 }
+                counters[title] += count
             }
             continue
         }
@@ -261,6 +269,7 @@ func Index(c echo.Context) error {
     c.Logger().Error("charts", len(charts))
 
     return c.Render(200, "index.html", Page {
+        Ratio: float64(overUnderFlows) / (float64(overUnderFlows) + float64(tickOnTime)),
         ErrorMsg: "",
         Charts: charts,
         File: file,

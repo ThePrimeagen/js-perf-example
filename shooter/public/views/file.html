@@ -8,6 +8,7 @@
 {{ block "file-display" . }}
     {{ if . }}
         {{ if .Counters }}
+            <p>Ratio: {{ .Ratio }}</p>
             <ul>
                 {{ range $key, $value := .Counters }}
                    <li><strong>{{ $key }}</strong>: {{ $value }}</li>

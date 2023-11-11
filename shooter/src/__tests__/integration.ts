@@ -38,30 +38,44 @@ async function* spawnChild(cmd: string, closeOnError: boolean = false) {
 }
 
 jest.useFakeTimers();
-jest.setTimeout(100_000);
+jest.setTimeout(40_000);
 test("player one shoots once and wins", async () => {
     execSync("tsc");
+    if (process.env.CHECK) {
+        try {
+            console.log(execSync("lsof -i :42000").toString());
+        } catch (e) {
+            console.error("cannot check", e);
+        }
+    }
 
-    const main = spawnChild("node dist/src/server.js --port 42000");
+    const main = spawnChild("node dist/src/server.js --port 42000 --logLevel=trace --logPath=/tmp/test.log");
     await main.next();
 
     const client = spawnChild("cargo run --release -- --port 42000 -q 1 -g 1 -t 2 -d");
     let p1: PlayerState | null = null;
     let p2: PlayerState | null = null;
-    for await (const msg of client) {
-        if (msg.includes("GameResult")) {
-            break;
-        }
+    for await (const message of client) {
+        const messages = message.split("\n");
+        for (const msg of messages) {
+            if (msg.includes("GameResult")) {
+                break;
+            }
 
-        if (msg.startsWith("DEBUG")) {
-            const player = +msg[msg.indexOf("(") + 1];
-            if (player === 1) {
-                p1 = JSON.parse(JSON.parse(msg.substring(msg.indexOf("\""), msg.length - 1)));
-            } else {
-                p2 = JSON.parse(JSON.parse(msg.substring(msg.indexOf("\""), msg.length - 1)));
+            if (msg.startsWith("DEBUG")) {
+                const player = +msg[msg.indexOf("(") + 1];
+                const parsed = msg.substring(msg.indexOf("\""), msg.length);
+                if (player === 1) {
+                    p1 = JSON.parse(JSON.parse(parsed));
+                } else {
+                    p2 = JSON.parse(JSON.parse(parsed));
+                }
             }
         }
 
+        if (p1 && p2) {
+            break;
+        }
     }
 
     expect(p1);
@@ -81,11 +95,15 @@ test("player one shoots once and wins", async () => {
 
 afterEach(() => {
     kills.forEach(k => {
-        // this sometimes doesn't work
-        k.kill("SIGKILL");
+        try {
+            // this sometimes doesn't work
+            k.kill("SIGKILL");
 
-        if (k.pid) {
-            execSync("kill -9 " + k.pid);
+            if (k.pid) {
+                execSync("kill -9 " + k.pid);
+            }
+        } catch (e) {
+            ((_) => {})(e);
         }
     });
 });

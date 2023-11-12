@@ -17,6 +17,7 @@ export type PlayerState = {
     x: number;
     ticks: number;
     direction: 1 | -1;
+    bullets: Set<Bullet>;
 }
 
 let id = 0;
@@ -29,6 +30,7 @@ function createState(x: number, direction: 1 | -1) {
         direction,
         id: ++id,
         ticks: 0,
+        bullets: new Set<Bullet>(),
     };
 }
 
@@ -50,7 +52,6 @@ export class Game {
 
     private logger: Logger;
     public loopCount: number = 0;
-    public bullets: Bullet[];
 
     private currentTime: number = 0;
 
@@ -58,7 +59,6 @@ export class Game {
         this.s1 = createState(-distance, 1);
         this.s2 = createState(distance, -1);
         this.logger = getLogger().child({ p1: this.s1, p2: this.s2, id: id++ });
-        this.bullets = [];
     }
 
     log() {
@@ -75,8 +75,7 @@ s2: ${JSON.stringify(this.s2)}`);
         this.loopCount++;
         this.currentTime += delta;
 
-        for (let i = 0; i < this.bullets.length; ++i) {
-            const b = this.bullets[i];
+        for (const b of this.s2.bullets) {
             updateBullet(b, delta);
             if (b.x < this.s1.x + consts.PLAYER_RADIUS) {
                 this.logger.info({ s1: this.s1, s2: this.s2, loopCount: this.loopCount }, "player one lost");
@@ -85,6 +84,12 @@ s2: ${JSON.stringify(this.s2)}`);
                 this.ended = true;
                 return;
             }
+        }
+
+        // test for bullet collisions
+        const bulletsRemoved = [];
+        for (const b of this.s1.bullets) {
+            updateBullet(b, delta);
             if (b.x > this.s2.x - consts.PLAYER_RADIUS) {
                 this.logger.info({ s1: this.s1, s2: this.s2, loopCount: this.loopCount }, "player two lost");
                 this.s2.won = false;
@@ -92,20 +97,23 @@ s2: ${JSON.stringify(this.s2)}`);
                 this.ended = true;
                 return;
             }
-
-            for (let j = i + 1; j < this.bullets.length; ++j)  {
-                const b2 = this.bullets[j];
+            for (const b2 of this.s2.bullets) {
                 if (collide(b, b2)) {
                     this.logger.info({
                         b,
                         other: b2,
                     }, "bullets collided");
-                    this.bullets.splice(j, 1);
-                    this.bullets.splice(i--, 1);
+                    bulletsRemoved.push(b);
+                    bulletsRemoved.push(b2);
                     break;
                 }
             }
         }
+
+        bulletsRemoved.forEach(b => {
+            this.s1.bullets.delete(b);
+            this.s2.bullets.delete(b);
+        });
     }
 
     fire(player: number) {
@@ -125,7 +133,7 @@ s2: ${JSON.stringify(this.s2)}`);
     }
 
     private createBullet(state: PlayerState) {
-        this.bullets.push({
+        state.bullets.add({
             x: state.x + (consts.PLAYER_RADIUS + consts.BULLET_RADIUS) * state.direction,
             direction: state.direction,
             id: ++id,
@@ -139,3 +147,4 @@ s2: ${JSON.stringify(this.s2)}`);
         return player === 1 ? this.s1 : this.s2;
     }
 }
+

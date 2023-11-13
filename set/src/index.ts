@@ -15,6 +15,29 @@ if (process.argv[2]) {
 const str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+[{(&=)}]*!|`%#\\";
 console.log("max", str.length);
 
+function randomCreateString(count: number, charsUntil: number) {
+    let substr = str.substring(0, count - 1);
+    let noRepeat = str.substring(0, count);
+
+    let i = 0;
+    let innerCount = 0;
+    let rand = Math.ceil(Math.random() * charsUntil);
+
+    return function() {
+        i++;
+        innerCount++;
+        if (i < charsUntil) {
+            if (innerCount === rand) {
+                innerCount = 0;
+                rand = Math.ceil(Math.random() * charsUntil);
+            }
+            return substr[innerCount];
+        } else {
+            return noRepeat[i % count];
+        }
+    };
+}
+
 function createString(count: number, charsUntil: number) {
     let substr = str.substring(0, count - 1);
     let noRepeat = str.substring(0, count);

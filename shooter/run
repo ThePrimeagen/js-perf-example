@@ -14,7 +14,7 @@ for count in 500 1000 2000; do
     node dist/src/server.js --logPath $1_$count &
     sleep 1
     node_pid=$!
-    cargo run --release -- -q $count -g $(($count * 300)) -f 120 -s 180 -t 5 &
+    cargo run --release -- -q $count -g $(($count * 300)) -t 2 &
     sleep 1
     cargo_pid=$!
     echo "testing for 30 seconds"

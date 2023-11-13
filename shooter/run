@@ -11,7 +11,7 @@ tsc
 
 for count in 500 1000 2000; do
     echo "Running $count"
-    node dist/server.js --logPath $1_$count &
+    node dist/src/server.js --logPath $1_$count &
     sleep 1
     node_pid=$!
     cargo run --release -- -q $count -g $(($count * 3)) -f 120 -s 180 -t 5

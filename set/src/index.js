@@ -15,6 +15,8 @@ if (process.argv[2]) {
 const str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+[{(&=)}]*!|`%#\\";
 console.log("max", str.length);
 
+const strFnToUse = createString;
+
 /**
  * @param {number} count
  * @param {number} charsUntil
@@ -123,7 +125,7 @@ function run(fn) {
     const runs = [];
 
     for (let i = 0; i < runCount; ++i) {
-        const gen = createString(count, charsUntil);
+        const gen = strFnToUse(count, charsUntil);
         const start = Date.now();
         const c = fn(gen);
         const runtime = Date.now() - start;

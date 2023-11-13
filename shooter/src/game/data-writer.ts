@@ -33,7 +33,7 @@ export class Writer {
         this.flush();
     }
 
-    private async flush() {
+    private flush() {
         if (this.id) {
             return;
         }
@@ -43,7 +43,7 @@ export class Writer {
         }, this.reportIntervalMS);
     }
 
-    private async flushContents() {
+    private flushContents() {
 
         for (const [title, pointSet] of this.data.entries()) {
             getLogger().warn({ title, pointSet: Object.fromEntries(pointSet) });

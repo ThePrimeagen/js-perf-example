@@ -1,4 +1,4 @@
-import data from "./data.json";
+const data = require("./data.json");
 
 let {
     count,

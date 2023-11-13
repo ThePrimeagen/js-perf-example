@@ -21,7 +21,7 @@ function randomCreateString(count: number, charsUntil: number) {
 
     let i = 0;
     let innerCount = 0;
-    let rand = Math.ceil(Math.random() * charsUntil);
+    let rand = Math.floor(Math.random() * count - 1);
 
     return function() {
         i++;
@@ -29,7 +29,7 @@ function randomCreateString(count: number, charsUntil: number) {
         if (i < charsUntil) {
             if (innerCount === rand) {
                 innerCount = 0;
-                rand = Math.ceil(Math.random() * charsUntil);
+                rand = Math.floor(Math.random() * count - 1);
             }
             return substr[innerCount];
         } else {

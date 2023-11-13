@@ -15,7 +15,11 @@ if (process.argv[2]) {
 const str = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+[{(&=)}]*!|`%#\\";
 console.log("max", str.length);
 
-function randomCreateString(count: number, charsUntil: number) {
+/**
+ * @param {number} count
+ * @param {number} charsUntil
+ */
+function randomCreateString(count, charsUntil) {
     let substr = str.substring(0, count - 1);
     let noRepeat = str.substring(0, count);
 
@@ -38,7 +42,11 @@ function randomCreateString(count: number, charsUntil: number) {
     };
 }
 
-function createString(count: number, charsUntil: number) {
+/**
+ * @param {number} count
+ * @param {number} charsUntil
+ */
+function createString(count, charsUntil) {
     let substr = str.substring(0, count - 1);
     let noRepeat = str.substring(0, count);
 
@@ -54,7 +62,10 @@ function createString(count: number, charsUntil: number) {
     };
 }
 
-function findWithSet(iter: () => string) {
+/**
+ * @param {() => string} iter
+ */
+function findWithSet(iter) {
     let set = new Set()
     let runs = 0;
     let resets = 0;
@@ -77,8 +88,12 @@ function findWithSet(iter: () => string) {
     return runs;
 }
 
-function findWithArray(iter: () => string) {
-    let arr: string[] = []
+/**
+ * @param {() => string} iter
+ */
+function findWithArray(iter) {
+    /** @type {string[]} */
+    let arr = []
     let runs = 0;
     let resets = 0;
     let sizeOnReset = 0;
@@ -98,8 +113,14 @@ function findWithArray(iter: () => string) {
     return runs;
 }
 
-function run(fn: (gen: () => string) => number): [number, number][] {
-    const runs: [number, number][] = [];
+/** @typedef {[number, number]} Run */
+/**
+ * @param {(gen: () => string) => number} gen
+ * @return {Run[]}
+ */
+function run(fn) {
+    /** @type {Run[]} */
+    const runs = [];
 
     for (let i = 0; i < runCount; ++i) {
         const gen = createString(count, charsUntil);
@@ -112,12 +133,17 @@ function run(fn: (gen: () => string) => number): [number, number][] {
     return runs;
 }
 
-function round(x: number) {
+/** @param {number} x */
+function round(x) {
     return Math.round(x * 1000) / 1000;
 }
 
-function printStats(name: string, values: [number, number][]) {
-    const [time, count] = values.reduce<[number, number]>((acc, [time, count]) => {
+/**
+ * @param {string} name
+ * @param {Run[]} values
+ * */
+function printStats(name, values) {
+    const [time, count] = values.reduce((acc, [time, count]) => {
         acc[0] += time;
         acc[1] += count;
         return acc;

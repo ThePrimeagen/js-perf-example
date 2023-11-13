@@ -17,7 +17,7 @@ export function initLogger(args: Config): Logger {
     if (args.logPath) {
         try {
             if (fs.existsSync(args.logPath)) {
-                fs.unlinkSync(args.logPath);
+                throw new Error("Log file already exists, delete/change path and rerun");
             }
         } catch (e) { }
 
